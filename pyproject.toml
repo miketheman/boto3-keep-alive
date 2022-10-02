@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "boto3-keep-alive"
+version = "0.1.0"
+description = "Testing Boto and Keep Alive"
+authors = ["Mike Fiedler <miketheman@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "boto3_keep_alive"}]
+classifiers = ["Private :: Do not Upload"]
+
+[tool.poetry.dependencies]
+python = "~3.9"
+boto3 = "^1.24.84"
+
+[tool.poetry.group.dev.dependencies]
+black = "^22.8.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -1,0 +1,24 @@
+service: boto3-keep-alive
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: python3.9
+  region: us-east-1
+
+  iam:
+    role:
+      statements:
+        - Effect: "Allow"
+          Action:
+            - "dynamodb:PutItem"
+          Resource:
+            - !Sub 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*'
+
+functions:
+  main:
+    handler: handler.lambda_handler
+    url: true
+
+plugins:
+  - serverless-python-requirements
