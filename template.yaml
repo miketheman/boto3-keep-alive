@@ -1,0 +1,109 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Lambda function with DynamoDB for handling POST requests
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    Description: Environment name for resource naming and tagging
+    AllowedValues:
+      - dev
+      - staging
+      - prod
+
+Globals:
+  Function:
+    Runtime: python3.14
+    Timeout: 30
+    MemorySize: 1024
+    Architectures:
+      - arm64
+    Tags:
+      Application: boto3-keep-alive
+      ManagedBy: SAM
+      Environment: !Ref Environment
+
+Resources:
+  PostsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: handler.lambda_handler
+      CodeUri: src
+      Description: Lambda function to handle POST requests and persist to DynamoDB
+      LoggingConfig:
+        LogGroup: !Ref PostsFunctionLogGroup
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref PostsTable
+          BOTOCORE_TCP_KEEPALIVE: "true"
+      FunctionUrlConfig:
+        AuthType: NONE
+        Cors:
+          AllowOrigins:
+            - "*"
+          AllowMethods:
+            - POST
+          AllowHeaders:
+            - Content-Type
+      Policies:
+        - DynamoDBWritePolicy:
+            TableName: !Ref PostsTable
+      Tags:
+        Application: boto3-keep-alive
+        ManagedBy: SAM
+        Environment: !Ref Environment
+    Metadata:
+      BuildMethod: python3.14
+      BuildArchitecture: arm64
+
+  PostsFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-PostsFunction"
+      RetentionInDays: 7
+      Tags:
+        - Key: Application
+          Value: boto3-keep-alive
+        - Key: ManagedBy
+          Value: SAM
+        - Key: Environment
+          Value: !Ref Environment
+
+  PostsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: keepalive-test
+      AttributeDefinitions:
+        - AttributeName: postId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: postId
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+      Tags:
+        - Key: Application
+          Value: boto3-keep-alive
+        - Key: ManagedBy
+          Value: SAM
+        - Key: Environment
+          Value: !Ref Environment
+
+Outputs:
+  FunctionUrl:
+    Description: Lambda Function URL endpoint
+    Value: !GetAtt PostsFunctionUrl.FunctionUrl
+    Export:
+      Name: !Sub "${AWS::StackName}-FunctionUrl"
+  
+  TableName:
+    Description: DynamoDB Table Name
+    Value: !Ref PostsTable
+    Export:
+      Name: !Sub "${AWS::StackName}-TableName"
+  
+  FunctionArn:
+    Description: Lambda Function ARN
+    Value: !GetAtt PostsFunction.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-FunctionArn"

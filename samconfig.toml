@@ -1,0 +1,12 @@
+version = 0.1
+
+[default.deploy.parameters]
+stack_name = "boto3-keep-alive"
+resolve_s3 = true
+s3_prefix = "boto3-keep-alive"
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "Environment=\"dev\" DynamoDBEndpointOverride=\"\""
+image_repositories = []
+
+[default.global.parameters]
+region = "us-east-2"
